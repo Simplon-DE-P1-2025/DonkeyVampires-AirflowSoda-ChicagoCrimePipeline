@@ -1,0 +1,140 @@
+dataset: duckdb/chicago_crime  # datasource/table
+
+columns:
+
+  #identifiants
+  - name: id
+    data_type: bigint
+    checks:
+      - missing:
+      - duplicate:
+      - invalid:
+          valid_min: 1
+
+  - name: case_number
+    data_type: varchar
+    checks:
+      - missing:
+
+  #données temporelles
+  - name: date
+    data_type: timestamp
+    checks:
+      - missing:
+
+  - name: year
+    data_type: bigint
+    checks:
+      - missing:
+      - invalid:
+          valid_min: 2001  
+          valid_max: 2026       
+
+  - name: updated_on
+    data_type: varchar
+    checks:
+      - missing:
+
+  #donnnées localisation
+  - name: block
+    data_type: varchar
+    checks:
+      - missing:
+
+  - name: location_description
+    data_type: varchar
+   
+  # codes administratifs à Chicago
+  - name: beat
+    data_type: bigint
+    checks:
+      - missing:
+      - invalid:
+          valid_min: 100        # commence à 100x
+          valid_max: 2535       # max officiel Chicago
+
+  - name: district
+    data_type: bigint
+    checks:
+      - missing:
+      - invalid:
+          valid_min: 1
+          valid_max: 25         # 25 districts officiels Chicago PD
+
+  - name: ward
+    data_type: bigint
+    checks:
+      - missing:
+      - invalid:
+          valid_min: 1
+          valid_max: 50         # 50 wards officiels de la ville de Chicago
+
+  - name: community_area
+    data_type: bigint
+    checks:
+      - missing:
+      - invalid:
+          valid_min: 1
+          valid_max: 77         # 77 community areas officielles Chicago
+
+  # --- Classification du crime ---
+  - name: iucr
+    data_type: varchar
+    checks:
+      - missing:
+
+  - name: primary_type
+    data_type: varchar
+    checks:
+      - missing:
+
+  - name: description
+    data_type: varchar
+    checks:
+      - missing:
+
+  - name: fbi_code
+    data_type: varchar
+    checks:
+      - missing:
+
+  # champs booléens 
+  - name: arrest
+    data_type: boolean
+    checks:
+      - missing:
+
+  - name: domestic
+    data_type: boolean
+    checks:
+      - missing:
+
+  # coordonnées projetées 
+  - name: x_coordinate
+    data_type: double
+    checks:
+      - invalid:
+          valid_min: 1050000    # borne ouest de Chicago (officielle)
+          valid_max: 1210000    # borne est de Chicago (officielle)
+
+  - name: y_coordinate
+    data_type: double
+    checks:
+      - invalid:
+          valid_min: 1810000    # borne sud de Chicago (officielle)
+          valid_max: 1955000    # borne nord de Chicago (officielle)
+
+  # coordonnées GPS
+  - name: latitude
+    data_type: double
+    checks:
+      - invalid:
+          valid_min: 41.60      # borne sud officielle de Chicago
+          valid_max: 42.05      # borne nord officielle de Chicago
+
+  - name: longitude
+    data_type: double
+    checks:
+      - invalid:
+          valid_min: -87.95     # borne ouest officielle de Chicago
+          valid_max: -87.50     # borne est officielle de Chicago
