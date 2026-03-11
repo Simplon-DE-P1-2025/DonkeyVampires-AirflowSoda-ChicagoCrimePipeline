@@ -60,6 +60,7 @@ astro_project/
 │       └── filtered/               # Parquet valid + quarantaine
 ├── requirements.txt
 ├── Dockerfile
+├── README.md
 └── airflow_settings.yaml           # Connexion Airflow locale (postgres_chicago_crime)
 ```
 
@@ -83,6 +84,65 @@ fetch_chicago_crime_data >> check_soda >> transform_chicago_crime
 ```
 
 Chaque tâche récupère le chemin du fichier produit par la tâche précédente via `xcom_pull`. Si un check Soda échoue, le contrat qualité est rompu mais le pipeline continue (comportement configurable).
+
+
+## Contrôles qualité (Soda)
+
+Deux contrats YAML sont exécutés via **Soda V4 + DuckDB** à des étapes différentes du pipeline. Chaque contrat génère un rapport Markdown dans `include/reports/`.
+
+---
+
+### Check 1 — Données brutes (`soda_rules_firstcheck.yml`)
+
+Exécuté sur le **JSON brut** issu de l'API, avant toute transformation.
+
+| Catégorie | Colonne(s) | Contrôles réalisés |
+|---|---|---|
+| Identifiant | `id` | Non nul, sans doublon, valeur ≥ 1 |
+| Identifiant | `case_number` | Non nul |
+| Dates | `date`, `updated_on` | Non nul |
+| Dates | `year` | Non nul, entre 2001 et 2026 |
+| Localisation | `block` | Non nul |
+| Codes administratifs | `beat` | Non nul, entre 100 et 2535 |
+| Codes administratifs | `district` | Non nul, entre 1 et 25 (districts Chicago PD) |
+| Codes administratifs | `ward` | Non nul, entre 1 et 50 (wards de Chicago) |
+| Codes administratifs | `community_area` | Non nul, entre 1 et 77 (community areas) |
+| Classification | `iucr`, `primary_type`, `description`, `fbi_code` | Non nul |
+| Booléens | `arrest`, `domestic` | Non nul |
+| Coordonnées projetées | `x_coordinate` | Entre 1 050 000 et 1 210 000 (bornes Chicago) |
+| Coordonnées projetées | `y_coordinate` | Entre 1 810 000 et 1 955 000 (bornes Chicago) |
+| Coordonnées GPS | `latitude` | Entre 41.60 et 42.05 |
+| Coordonnées GPS | `longitude` | Entre -87.95 et -87.50 |
+
+---
+
+### Check 2 — Données transformées (`soda_rules_secondcheck.yml`)
+
+Exécuté sur le **Parquet nettoyé**, après transformation. Les règles sont plus strictes car les données ont été typées et dédupliquées.
+
+| Catégorie | Colonne(s) | Contrôles réalisés |
+|---|---|---|
+| Identifiant | `id` | Non nul, **sans doublon** (déduplication vérifiée) |
+| Identifiant | `case_number` | Non nul |
+| Dates | `date` | Non nul, type `timestamp`, entre 2001-01-01 et 2026-12-31 |
+| Dates | `year` | Non nul, entre 2001 et 2026 |
+| Dates | `updated_on` | Non nul, type `timestamp` |
+| Classification | `primary_type` | Non nul, valeur dans les **31 types officiels Chicago PD** |
+| Classification | `iucr`, `fbi_code` | Non nul |
+| Coordonnées GPS | `latitude` | Entre 41.60 et 42.05 |
+| Coordonnées GPS | `longitude` | Entre -87.95 et -87.50 |
+| Coordonnées projetées | `x_coordinate` | Entre 1 050 000 et 1 210 000 |
+| Coordonnées projetées | `y_coordinate` | Entre 1 810 000 et 1 955 000 |
+
+---
+
+### Filtrage post-check 2
+
+Après le second check, `filtering.py` applique les mêmes règles de manière **ligne par ligne** et produit :
+
+- ✅ `valid_*.parquet` — lignes conformes, chargées dans PostgreSQL
+- ❌ `invalid_*.parquet` — lignes rejetées, conservées en **quarantaine Parquet** (non chargées en base)
+
 
 ## Scripts source (`src/`)
 
@@ -158,62 +218,7 @@ POSTGRES_PASSWORD=PASSWORD
 
 > ⚠️ Utiliser le **hostname externe** Render (visible dans Dashboard → PostgreSQL → External Database URL). Le hostname interne n'est pas résolvable depuis Docker.
 
-## Contrôles qualité (Soda)
 
-Deux contrats YAML sont exécutés via **Soda V4 + DuckDB** à des étapes différentes du pipeline. Chaque contrat génère un rapport Markdown dans `include/reports/`.
-
----
-
-### Check 1 — Données brutes (`soda_rules_firstcheck.yml`)
-
-Exécuté sur le **JSON brut** issu de l'API, avant toute transformation.
-
-| Catégorie | Colonne(s) | Contrôles réalisés |
-|---|---|---|
-| Identifiant | `id` | Non nul, sans doublon, valeur ≥ 1 |
-| Identifiant | `case_number` | Non nul |
-| Dates | `date`, `updated_on` | Non nul |
-| Dates | `year` | Non nul, entre 2001 et 2026 |
-| Localisation | `block` | Non nul |
-| Codes administratifs | `beat` | Non nul, entre 100 et 2535 |
-| Codes administratifs | `district` | Non nul, entre 1 et 25 (districts Chicago PD) |
-| Codes administratifs | `ward` | Non nul, entre 1 et 50 (wards de Chicago) |
-| Codes administratifs | `community_area` | Non nul, entre 1 et 77 (community areas) |
-| Classification | `iucr`, `primary_type`, `description`, `fbi_code` | Non nul |
-| Booléens | `arrest`, `domestic` | Non nul |
-| Coordonnées projetées | `x_coordinate` | Entre 1 050 000 et 1 210 000 (bornes Chicago) |
-| Coordonnées projetées | `y_coordinate` | Entre 1 810 000 et 1 955 000 (bornes Chicago) |
-| Coordonnées GPS | `latitude` | Entre 41.60 et 42.05 |
-| Coordonnées GPS | `longitude` | Entre -87.95 et -87.50 |
-
----
-
-### Check 2 — Données transformées (`soda_rules_secondcheck.yml`)
-
-Exécuté sur le **Parquet nettoyé**, après transformation. Les règles sont plus strictes car les données ont été typées et dédupliquées.
-
-| Catégorie | Colonne(s) | Contrôles réalisés |
-|---|---|---|
-| Identifiant | `id` | Non nul, **sans doublon** (déduplication vérifiée) |
-| Identifiant | `case_number` | Non nul |
-| Dates | `date` | Non nul, type `timestamp`, entre 2001-01-01 et 2026-12-31 |
-| Dates | `year` | Non nul, entre 2001 et 2026 |
-| Dates | `updated_on` | Non nul, type `timestamp` |
-| Classification | `primary_type` | Non nul, valeur dans les **31 types officiels Chicago PD** |
-| Classification | `iucr`, `fbi_code` | Non nul |
-| Coordonnées GPS | `latitude` | Entre 41.60 et 42.05 |
-| Coordonnées GPS | `longitude` | Entre -87.95 et -87.50 |
-| Coordonnées projetées | `x_coordinate` | Entre 1 050 000 et 1 210 000 |
-| Coordonnées projetées | `y_coordinate` | Entre 1 810 000 et 1 955 000 |
-
----
-
-### Filtrage post-check 2
-
-Après le second check, `filtering.py` applique les mêmes règles de manière **ligne par ligne** et produit :
-
-- ✅ `valid_*.parquet` — lignes conformes, chargées dans PostgreSQL
-- ❌ `invalid_*.parquet` — lignes rejetées, conservées en **quarantaine Parquet** (non chargées en base)
 
 ## Connexion Airflow
 
