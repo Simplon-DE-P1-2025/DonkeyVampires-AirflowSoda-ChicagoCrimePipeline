@@ -9,8 +9,15 @@ from src.filtering import run_filter_rows
 from src.load import run_load
 
 
+default_args = {
+    "owner": "dataops_team",
+    "retries": 2,
+    "retry_delay": timedelta(minutes=5),
+    "email_on_failure": False,
+}
 with DAG(
     'chicago_crime_pipeline',
+    default_args=default_args,
     start_date=datetime(2026, 3, 9),
     schedule='@daily',
     catchup=False,
