@@ -7,4 +7,3 @@ data_source postgres_chicago:
     password: password
     database: chicago_data
   schema: public
-  table: chicago_crime
