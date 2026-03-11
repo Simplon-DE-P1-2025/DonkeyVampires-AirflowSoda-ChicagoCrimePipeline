@@ -11,3 +11,5 @@ airflow.cfg
 airflow.db
 *.json
 include/data/
+**/*.json
+**/include/data/
