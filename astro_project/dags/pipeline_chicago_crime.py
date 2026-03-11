@@ -8,9 +8,10 @@ import os
 sys.path.append("/usr/local/airflow")
 
 from src.ingestion import fetch_chicago_crime_data
-from src.data_quality import check_raw_data, check_clean_data  # On importe les deux
+from src.data_quality import check_raw_data, check_clean_data
 from src.transform import transform_data
 from src.load import load_to_postgres
+from src.soda_scan import run_soda_scan
 
 with DAG(
     "chicago_crime_pipeline",
@@ -34,15 +35,27 @@ with DAG(
         task_id="transform_data", python_callable=transform_data
     )
 
-    # 4. Qualité sur le propre (Nouvelle étape)
+    # 4. Qualité sur le propre
     quality_clean_t = PythonOperator(
         task_id="check_clean_data", python_callable=check_clean_data
     )
 
-    # 5. Chargement final
+    # 5. Chargement final dans Postgres
     load_t = PythonOperator(
         task_id="load_to_postgres", python_callable=load_to_postgres
     )
 
-    # L'ordre logique du flux
-    ingest_t >> quality_raw_t >> transform_t >> quality_clean_t >> load_t
+    # 6. Le vrai scan Soda sur la base de données
+    soda_final_t = PythonOperator(
+        task_id="soda_database_scan", python_callable=run_soda_scan
+    )
+
+    # L'ordre logique du flux complet !
+    (
+        ingest_t
+        >> quality_raw_t
+        >> transform_t
+        >> quality_clean_t
+        >> load_t
+        >> soda_final_t
+    )

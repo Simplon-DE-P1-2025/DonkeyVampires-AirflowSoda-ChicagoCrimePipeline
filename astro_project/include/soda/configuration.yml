@@ -1,0 +1,10 @@
+data_source postgres_chicago:
+  type: postgres
+  connection:
+    host: host.docker.internal
+    port: 5433
+    username: user
+    password: password
+    database: chicago_data
+  schema: public
+  table: chicago_crime

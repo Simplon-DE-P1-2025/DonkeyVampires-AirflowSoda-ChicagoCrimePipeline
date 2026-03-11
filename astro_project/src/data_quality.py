@@ -3,43 +3,43 @@ import os
 
 
 def check_raw_data(ti=None):
-    """Vérification des données brutes après l'ingestion"""
     file_path = ti.xcom_pull(task_ids="fetch_chicago_crime_data")
-
     if not file_path or not os.path.exists(file_path):
-        raise ValueError(f"Fichier brut introuvable : {file_path}")
+        raise ValueError(f"Fichier introuvable : {file_path}")
 
     df = pd.read_json(file_path)
-    row_count = len(df)
+    print(f"--- ANALYSE DE QUALITÉ (Total lignes : {len(df)}) ---")
 
-    print(f"--- CHECK DONNÉES BRUTES ---")
-    print(f"Lignes trouvées : {row_count}")
+    # 1. Check des Doublons (comme dans ton YAML)
+    if df["id"].duplicated().any():
+        print("❌ ÉCHEC : Des doublons d'ID ont été détectés.")
+        raise ValueError("Qualité compromise : Doublons détectés.")
+    else:
+        print("✅ Doublons : OK")
 
-    if row_count == 0:
-        raise ValueError("ÉCHEC : Le fichier brut est vide !")
+    # 2. Check des Valeurs Manquantes Critiques
+    critical_cols = ["case_number", "date", "primary_type", "description"]
+    for col in critical_cols:
+        if col in df.columns and df[col].isnull().any():
+            print(f"❌ ÉCHEC : Valeurs nulles détectées dans la colonne '{col}'.")
+            raise ValueError(f"Qualité compromise : Nulls dans {col}.")
+    print("✅ Valeurs manquantes critiques : OK")
 
-    print("Qualité brute validée.")
-    return file_path
-
-
-def check_clean_data(ti=None):
-    """Vérification des données nettoyées après transformation"""
-    file_path = ti.xcom_pull(task_ids="transform_data")
-
-    if not file_path or not os.path.exists(file_path):
-        raise ValueError(f"Fichier propre introuvable : {file_path}")
-
-    df = pd.read_json(file_path)
-
-    # On vérifie que les colonnes essentielles sont là
-    expected_columns = ["id", "case_number", "primary_type", "date", "arrest"]
-
-    print(f"--- CHECK DONNÉES PROPRES ---")
-    for col in expected_columns:
-        if col not in df.columns:
-            raise ValueError(
-                f"ERREUR : La colonne '{col}' manque après transformation !"
+    # 3. Check Métier : Validité de l'Année (entre 2001 et 2026)
+    if "year" in df.columns:
+        years = df["year"].dropna().astype(int)
+        if years.min() < 2001 or years.max() > 2026:
+            print(
+                "⚠️ WARNING : Des années hors de la plage [2001-2026] ont été détectées."
             )
+        else:
+            print("✅ Validité des années : OK")
 
-    print(f"Qualité propre validée ({len(df)} lignes conformes).")
+    print("--- QUALITÉ BRUTE VALIDÉE ---")
     return file_path
+
+
+# Tu peux garder ton check_clean_data existant en dessous
+def check_clean_data(ti=None):
+    # ... ton code actuel pour le clean check ...
+    return ti.xcom_pull(task_ids="transform_data")

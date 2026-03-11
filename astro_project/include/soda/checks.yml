@@ -1,0 +1,16 @@
+checks for final_crimes:
+  # 1. Vérification de base
+  - row_count > 0
+  
+  # 2. Vérification de l'ID (pas de null, pas de doublons)
+  - missing_count(id) = 0
+  - duplicate_count(id) = 0
+  
+  # 3. Champs critiques qui ne doivent pas être vides
+  - missing_count(case_number) = 0
+  - missing_count(primary_type) = 0
+  - missing_count(date) = 0
+
+  # 4. Vérification métier (Dates et Codes)
+  - min(date) >= '2001-01-01'
+  - max(date) <= '2026-12-31'
