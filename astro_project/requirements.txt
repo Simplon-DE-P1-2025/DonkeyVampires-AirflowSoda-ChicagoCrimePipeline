@@ -1,5 +1,12 @@
+--extra-index-url https://pypi.cloud.soda.io/simple
 apache-airflow-providers-postgres
 pandas
+pyarrow
 requests
-soda-core-postgres
+sqlalchemy
+psycopg2-binary
+python-dotenv
+soda-postgres
+soda-duckdb
+duckdb
 setuptools

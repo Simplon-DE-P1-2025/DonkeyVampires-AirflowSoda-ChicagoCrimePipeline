@@ -7,7 +7,7 @@ from datetime import datetime
 def fetch_chicago_crime_data(
     base_url: str = "https://data.cityofchicago.org/resource/ijzp-q8t2.json",
     limit: int = 10000,
-    max_pages: int = 2,
+    max_pages: int = 100,
 ):
     print("Début de l'extraction API...")
     all_items = []
