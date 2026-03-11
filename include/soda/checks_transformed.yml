@@ -1,0 +1,13 @@
+checks for transformed_crimes:
+  - row_count > 0:
+      name: "Table transformée non vide"
+  - missing_count(primary_type) = 0:
+      name: "Type de crime présent"
+  - missing_count(total_crimes) = 0:
+      name: "Total crimes présent"
+  - min(total_crimes) >= 1:
+      name: "Au moins 1 crime par groupe"
+  - min(arrest_rate) >= 0:
+      name: "Taux d'arrestation positif"
+  - max(arrest_rate) <= 1:
+      name: "Taux d'arrestation max 100%"

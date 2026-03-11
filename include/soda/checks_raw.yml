@@ -1,0 +1,14 @@
+checks for raw_crimes:
+  - row_count > 0:
+      name: "Table non vide"
+  - missing_count(id) = 0:
+      name: "Pas de clé primaire manquante"
+  - missing_count(primary_type) = 0:
+      name: "Type de crime obligatoire"
+  - missing_count(date) = 0:
+      name: "Date obligatoire"
+  - duplicate_count(id) = 0:
+      name: "Pas de doublon sur l'ID"
+  - invalid_count(arrest) = 0:
+      valid values: [true, false]
+      name: "Valeur arrest valide"
