@@ -3,3 +3,5 @@ pandas
 requests
 soda-core-postgres
 setuptools
+sqlalchemy
+psycopg2-binary
