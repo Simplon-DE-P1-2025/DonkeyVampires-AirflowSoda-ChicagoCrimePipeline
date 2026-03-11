@@ -1,0 +1,153 @@
+dataset: duckdb/chicago_crime  # datasource/table
+
+# Second check — runs on the TRANSFORMED Parquet file (post-cleaning)
+# Goal: validate that transformations produced clean, loadable data
+# Rows that fail critical checks should NOT be loaded into PostgreSQL
+
+columns:
+
+  # --- Identifiants ---
+  - name: id
+    data_type: bigint
+    checks:
+      - missing:                          # id must always be present
+      - duplicate:                        # deduplication must have removed all duplicates
+
+  - name: case_number
+    data_type: varchar
+    checks:
+      - missing:
+
+  # --- Dates (typed after transformation) ---
+  - name: date
+    data_type: timestamp
+    checks:
+      - missing:
+      - invalid:
+          valid_min: 2001-01-01           # Chicago crime data starts 2001
+          valid_max: 2026-12-31
+
+  - name: year
+    data_type: bigint
+    checks:
+      - missing:
+      - invalid:
+          valid_min: 2001
+          valid_max: 2026
+
+  - name: updated_on
+    data_type: timestamp
+    checks:
+      - missing:
+
+  # --- Localisation ---
+  - name: latitude
+    data_type: double
+    checks:
+      - invalid:
+          valid_min: 41.60
+          valid_max: 42.05
+
+  - name: longitude
+    data_type: double
+    checks:
+      - invalid:
+          valid_min: -87.95
+          valid_max: -87.50
+
+  - name: x_coordinate
+    data_type: double
+    checks:
+      - invalid:
+          valid_min: 1050000
+          valid_max: 1210000
+
+  - name: y_coordinate
+    data_type: double
+    checks:
+      - invalid:
+          valid_min: 1810000
+          valid_max: 1955000
+
+  # --- Classification du crime ---
+  - name: primary_type
+    data_type: varchar
+    checks:
+      - missing:
+      - invalid:
+          valid_values:
+            - THEFT
+            - BATTERY
+            - CRIMINAL DAMAGE
+            - MOTOR VEHICLE THEFT
+            - ASSAULT
+            - OTHER OFFENSE
+            - DECEPTIVE PRACTICE
+            - ROBBERY
+            - BURGLARY
+            - WEAPONS VIOLATION
+            - CRIMINAL TRESPASS
+            - NARCOTICS
+            - OFFENSE INVOLVING CHILDREN
+            - CRIM SEXUAL ASSAULT
+            - CRIMINAL SEXUAL ASSAULT
+            - SEX OFFENSE
+            - ARSON
+            - HOMICIDE
+            - INTERFERENCE WITH PUBLIC OFFICER
+            - GAMBLING
+            - STALKING
+            - INTIMIDATION
+            - KIDNAPPING
+            - LIQUOR LAW VIOLATION
+            - PUBLIC PEACE VIOLATION
+            - OBSCENITY
+            - NON-CRIMINAL
+            - PROSTITUTION
+            - HUMAN TRAFFICKING
+            - PUBLIC INDECENCY
+            - CONCEALED CARRY LICENSE VIOLATION
+
+  - name: iucr
+    data_type: varchar
+    checks:
+      - missing:
+
+  - name: fbi_code
+    data_type: varchar
+    checks:
+      - missing:
+
+  # --- Champs administratifs ---
+  - name: district
+    data_type: bigint
+    checks:
+      - missing:
+      - invalid:
+          valid_min: 1
+          valid_max: 25
+
+  - name: ward
+    data_type: bigint
+    checks:
+      - invalid:
+          valid_min: 1
+          valid_max: 50
+
+  - name: community_area
+    data_type: bigint
+    checks:
+      - invalid:
+          valid_min: 1
+          valid_max: 77
+
+  # --- Booléens ---
+  - name: arrest
+    data_type: boolean
+    checks:
+      - missing:
+
+  - name: domestic
+    data_type: boolean
+    checks:
+      - missing:
