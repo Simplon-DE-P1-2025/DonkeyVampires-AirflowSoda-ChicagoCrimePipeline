@@ -13,11 +13,7 @@ with DAG(
     'chicago_crime_pipeline',
     start_date=datetime(2026, 3, 9),
     schedule='@daily',
-    owner='dataops_team',
-    retries=2,
-    retry_delay=timedelta(minutes=5),
     catchup=False,
-    email_on_failure=False,
 ) as dag:
 
     ingest_task = PythonOperator(
