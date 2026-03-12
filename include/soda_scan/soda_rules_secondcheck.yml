@@ -1,6 +1,6 @@
 dataset: duckdb/chicago_crime  # datasource/table
 
-# Second check — runs on the TRANSFORMED Parquet file (post-cleaning)
+# Second check — runs on the TRANSFORMED Parquet file 
 # Goal: validate that transformations produced clean, loadable data
 # Rows that fail critical checks should NOT be loaded into PostgreSQL
 
@@ -20,12 +20,9 @@ columns:
 
   # --- Dates (typed after transformation) ---
   - name: date
-    data_type: timestamp
+    data_type: timestamp        # type enforcement is sufficient; range validated by the failed rows check below
     checks:
       - missing:
-      - invalid:
-          valid_min: 2001-01-01           # Chicago crime data starts 2001
-          valid_max: 2026-12-31
 
   - name: year
     data_type: bigint
@@ -151,3 +148,9 @@ columns:
     data_type: boolean
     checks:
       - missing:
+checks for chicago_crime:
+  - failed rows:
+      name: "date out of expected range (2001-2026)"
+      fail query: |
+        SELECT * FROM chicago_crime
+        WHERE date < '2001-01-01' OR date > '2026-12-31'

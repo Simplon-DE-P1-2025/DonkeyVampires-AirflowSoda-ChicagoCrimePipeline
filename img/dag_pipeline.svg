@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 310" width="1060" height="310" font-family="'Segoe UI', Arial, sans-serif">
+  <defs>
+    <filter id="sh" x="-8%" y="-8%" width="116%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#00000015"/>
+    </filter>
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="4" orient="auto">
+      <polygon points="0 0, 10 4, 0 8" fill="#2196F3"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1060" height="310" fill="#ffffff" rx="14" stroke="#e9ecef" stroke-width="1"/>
+
+  <!-- ═════════════════ ARROWS ═════════════════ -->
+  <line x1="152" y1="145" x2="207" y2="145" stroke="#2196F3" stroke-width="2.2" marker-end="url(#arr)"/>
+  <line x1="317" y1="145" x2="373" y2="145" stroke="#2196F3" stroke-width="2.2" marker-end="url(#arr)"/>
+  <line x1="488" y1="145" x2="543" y2="145" stroke="#2196F3" stroke-width="2.2" marker-end="url(#arr)"/>
+  <line x1="653" y1="145" x2="709" y2="145" stroke="#2196F3" stroke-width="2.2" marker-end="url(#arr)"/>
+  <line x1="819" y1="145" x2="875" y2="145" stroke="#2196F3" stroke-width="2.2" marker-end="url(#arr)"/>
+
+  <!-- ═════════════════ STEP 1 — API JSON ═════════════════ -->
+  <!-- Card -->
+  <rect x="38" y="80" width="114" height="130" rx="16" fill="#f4f5f7" stroke="#dee2e6" stroke-width="1.5" filter="url(#sh)"/>
+  <!-- JSON file icon -->
+  <rect x="77" y="102" width="36" height="44" rx="4" fill="#ffffff" stroke="#adb5bd" stroke-width="1.5"/>
+  <polyline points="99,102 99,116 113,116" fill="none" stroke="#adb5bd" stroke-width="1.5"/>
+  <text x="95" y="133" text-anchor="middle" font-size="9" font-weight="700" fill="#495057">{}</text>
+  <!-- Label -->
+  <text x="95" y="163" text-anchor="middle" font-size="10" font-weight="700" fill="#212529">API publique</text>
+  <text x="95" y="177" text-anchor="middle" font-size="9" fill="#6c757d">(JSON)</text>
+  <!-- Badge -->
+  <circle cx="95" cy="68" r="14" fill="#6c757d"/>
+  <text x="95" y="73" text-anchor="middle" font-size="11" font-weight="700" fill="white">1</text>
+  <!-- Step label -->
+  <text x="95" y="228" text-anchor="middle" font-size="10" fill="#6c757d">Étape 1</text>
+
+  <!-- ═════════════════ STEP 2 — SODA Check 1 ═════════════════ -->
+  <!-- Circle card -->
+  <circle cx="265" cy="145" r="58" fill="#f4f5f7" stroke="#dee2e6" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="265" y="135" text-anchor="middle" font-size="16" font-weight="900" fill="#2196F3">SODA</text>
+  <text x="265" y="153" text-anchor="middle" font-size="10" font-weight="600" fill="#495057">Contrôle</text>
+  <text x="265" y="167" text-anchor="middle" font-size="10" font-weight="600" fill="#495057">qualité</text>
+  <!-- Badge -->
+  <circle cx="265" cy="75" r="14" fill="#6c757d"/>
+  <text x="265" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="white">2</text>
+  <!-- Step label -->
+  <text x="265" y="228" text-anchor="middle" font-size="10" fill="#6c757d">Étape 2</text>
+
+  <!-- ═════════════════ STEP 3 — Transformation ═════════════════ -->
+  <!-- Card -->
+  <rect x="373" y="80" width="114" height="130" rx="16" fill="#f4f5f7" stroke="#dee2e6" stroke-width="1.5" filter="url(#sh)"/>
+  <!-- Funnel+gear icon (simplified) -->
+  <circle cx="430" cy="125" r="22" fill="#ffffff" stroke="#adb5bd" stroke-width="1.5"/>
+  <!-- funnel icon inside -->
+  <polygon points="418,115 442,115 436,128 436,137 424,131 424,128" fill="none" stroke="#495057" stroke-width="1.5" stroke-linejoin="round"/>
+  <!-- Label -->
+  <text x="430" y="163" text-anchor="middle" font-size="10" font-weight="700" fill="#212529">Transformation</text>
+  <!-- Badge -->
+  <circle cx="430" cy="68" r="14" fill="#6c757d"/>
+  <text x="430" y="73" text-anchor="middle" font-size="11" font-weight="700" fill="white">3</text>
+  <!-- Step label -->
+  <text x="430" y="228" text-anchor="middle" font-size="10" fill="#6c757d">Étape 3</text>
+
+  <!-- ═════════════════ STEP 4 — SODA Check 2 ═════════════════ -->
+  <circle cx="597" cy="145" r="58" fill="#f4f5f7" stroke="#dee2e6" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="597" y="135" text-anchor="middle" font-size="16" font-weight="900" fill="#2196F3">SODA</text>
+  <text x="597" y="153" text-anchor="middle" font-size="10" font-weight="600" fill="#495057">Contrôle</text>
+  <text x="597" y="167" text-anchor="middle" font-size="10" font-weight="600" fill="#495057">qualité</text>
+  <!-- Badge -->
+  <circle cx="597" cy="75" r="14" fill="#6c757d"/>
+  <text x="597" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="white">4</text>
+  <!-- Step label -->
+  <text x="597" y="228" text-anchor="middle" font-size="10" fill="#6c757d">Étape 4</text>
+
+  <!-- ═════════════════ STEP 5 — Filtrage ═════════════════ -->
+  <rect x="709" y="80" width="114" height="130" rx="16" fill="#f4f5f7" stroke="#dee2e6" stroke-width="1.5" filter="url(#sh)"/>
+  <!-- Funnel icon -->
+  <polygon points="749,110 783,110 771,128 771,142 761,147 761,128" fill="none" stroke="#495057" stroke-width="1.8" stroke-linejoin="round"/>
+  <!-- Label -->
+  <text x="766" y="163" text-anchor="middle" font-size="10" font-weight="700" fill="#212529">Filtrage des</text>
+  <text x="766" y="177" text-anchor="middle" font-size="10" font-weight="700" fill="#212529">données</text>
+  <!-- valid / invalid hint -->
+  <!-- Badge -->
+  <circle cx="766" cy="68" r="14" fill="#6c757d"/>
+  <text x="766" y="73" text-anchor="middle" font-size="11" font-weight="700" fill="white">5</text>
+  <!-- Step label -->
+  <text x="766" y="228" text-anchor="middle" font-size="10" fill="#6c757d">Étape 5</text>
+
+  <!-- ═════════════════ STEP 6 — PostgreSQL ═════════════════ -->
+  <rect x="875" y="80" width="114" height="130" rx="16" fill="#f4f5f7" stroke="#dee2e6" stroke-width="1.5" filter="url(#sh)"/>
+  <!-- DB cylinder icon -->
+  <ellipse cx="932" cy="113" rx="22" ry="7" fill="#ffffff" stroke="#adb5bd" stroke-width="1.5"/>
+  <rect x="910" y="113" width="44" height="28" fill="#ffffff" stroke="#adb5bd" stroke-width="1.5"/>
+  <line x1="910" y1="128" x2="954" y2="128" stroke="#adb5bd" stroke-width="1"/>
+  <ellipse cx="932" cy="141" rx="22" ry="7" fill="#ffffff" stroke="#adb5bd" stroke-width="1.5"/>
+  <!-- Label -->
+  <text x="932" y="163" text-anchor="middle" font-size="10" font-weight="700" fill="#212529">PostgreSQL</text>
+  <!-- Badge -->
+  <circle cx="932" cy="68" r="14" fill="#6c757d"/>
+  <text x="932" y="73" text-anchor="middle" font-size="11" font-weight="700" fill="white">6</text>
+  <!-- Step label -->
+  <text x="932" y="228" text-anchor="middle" font-size="10" fill="#6c757d">Étape 6</text>
+
+  <!-- ═════════════════ BOTTOM NOTE ═════════════════ -->
+  <text x="530" y="270" text-anchor="middle" font-size="9" fill="#adb5bd">✅ Lignes valides → PostgreSQL  ·  ❌ Lignes invalides → quarantaine Parquet</text>
+
+</svg>

@@ -1,6 +1,5 @@
 import os
 import logging
-from datetime import datetime
 
 import pandas as pd
 
@@ -93,11 +92,8 @@ def filter_rows(
 
     # Sauvegarde
     os.makedirs(output_dir, exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    basename  = os.path.splitext(os.path.basename(file_path))[0]
-
-    valid_path   = os.path.join(output_dir, f"valid_{basename}_{timestamp}.parquet")
-    invalid_path = os.path.join(output_dir, f"invalid_{basename}_{timestamp}.parquet")
+    valid_path   = os.path.join(output_dir, "valid_crimes.parquet")
+    invalid_path = os.path.join(output_dir, "invalid_crimes.parquet")
 
     df_valid.to_parquet(valid_path, index=False)
     df_invalid.to_parquet(invalid_path, index=False)

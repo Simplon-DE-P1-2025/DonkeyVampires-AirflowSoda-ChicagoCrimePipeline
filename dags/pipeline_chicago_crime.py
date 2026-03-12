@@ -10,7 +10,7 @@ from src.load import run_load
 
 
 default_args = {
-    "owner": "dataops_team",
+    "owner": "DonkeyVampires",
     "retries": 2,
     "retry_delay": timedelta(minutes=5),
     "email_on_failure": False,

@@ -1,41 +1,43 @@
-dataset: duckdb/chicago_crime  # datasource/table
+dataset: duckdb/chicago_crime
+
+# ============================================================
+# FIRST CHECK — données JSON brutes (pré-transformation)
+# Règle : valider uniquement la PRÉSENCE des champs critiques.
+# Tous les champs sont varchar (l'API retourne tout en string).
+# Les checks de types, plages et doublons sont dans secondcheck.
+# ============================================================
 
 columns:
 
-  #identifiants
+  # --- Identifiants ---
   - name: id
-    data_type: bigint
+    data_type: varchar
     checks:
       - missing:
-      - duplicate:
-      - invalid:
-          valid_min: 1
+      - duplicate:         # détection des doublons dès l'ingestion
 
   - name: case_number
     data_type: varchar
     checks:
       - missing:
 
-  #données temporelles
+  # --- Dates (strings brutes ex: "2026-03-03T00:00:00.000") ---
   - name: date
-    data_type: timestamp
+    data_type: varchar
     checks:
       - missing:
 
   - name: year
-    data_type: bigint
+    data_type: varchar
     checks:
       - missing:
-      - invalid:
-          valid_min: 2001  
-          valid_max: 2026       
 
   - name: updated_on
     data_type: varchar
     checks:
       - missing:
 
-  #donnnées localisation
+  # --- Localisation ---
   - name: block
     data_type: varchar
     checks:
@@ -43,39 +45,27 @@ columns:
 
   - name: location_description
     data_type: varchar
-   
-  # codes administratifs à Chicago
+
+  # --- Codes administratifs (strings brutes ex: "0834") ---
   - name: beat
-    data_type: bigint
+    data_type: varchar
     checks:
       - missing:
-      - invalid:
-          valid_min: 100        # commence à 100x
-          valid_max: 2535       # max officiel Chicago
 
   - name: district
-    data_type: bigint
+    data_type: varchar
     checks:
       - missing:
-      - invalid:
-          valid_min: 1
-          valid_max: 25         # 25 districts officiels Chicago PD
 
   - name: ward
-    data_type: bigint
+    data_type: varchar
     checks:
       - missing:
-      - invalid:
-          valid_min: 1
-          valid_max: 50         # 50 wards officiels de la ville de Chicago
 
   - name: community_area
-    data_type: bigint
+    data_type: varchar
     checks:
       - missing:
-      - invalid:
-          valid_min: 1
-          valid_max: 77         # 77 community areas officielles Chicago
 
   # --- Classification du crime ---
   - name: iucr
@@ -98,43 +88,26 @@ columns:
     checks:
       - missing:
 
-  # champs booléens 
+  # --- Booléens (strings brutes "true"/"false") ---
   - name: arrest
-    data_type: boolean
+    data_type: varchar
     checks:
       - missing:
 
   - name: domestic
-    data_type: boolean
+    data_type: varchar
     checks:
       - missing:
 
-  # coordonnées projetées 
+  # --- Coordonnées (strings brutes, présence optionnelle) ---
   - name: x_coordinate
-    data_type: double
-    checks:
-      - invalid:
-          valid_min: 1050000    # borne ouest de Chicago (officielle)
-          valid_max: 1210000    # borne est de Chicago (officielle)
+    data_type: varchar
 
   - name: y_coordinate
-    data_type: double
-    checks:
-      - invalid:
-          valid_min: 1810000    # borne sud de Chicago (officielle)
-          valid_max: 1955000    # borne nord de Chicago (officielle)
+    data_type: varchar
 
-  # coordonnées GPS
   - name: latitude
-    data_type: double
-    checks:
-      - invalid:
-          valid_min: 41.60      # borne sud officielle de Chicago
-          valid_max: 42.05      # borne nord officielle de Chicago
+    data_type: varchar
 
   - name: longitude
-    data_type: double
-    checks:
-      - invalid:
-          valid_min: -87.95     # borne ouest officielle de Chicago
-          valid_max: -87.50     # borne est officielle de Chicago
+    data_type: varchar

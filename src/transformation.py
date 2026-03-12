@@ -1,7 +1,6 @@
 import os
 import json
 import logging
-from datetime import datetime
 
 import pandas as pd
 
@@ -52,6 +51,7 @@ def transform_chicago_crime(
     # Cast types
     df["id"] = pd.to_numeric(df["id"], errors="coerce").astype("Int64")
     df["year"] = pd.to_numeric(df["year"], errors="coerce").astype("Int64")
+    df["district"] = pd.to_numeric(df["district"], errors="coerce").astype("Int64")
     df["ward"] = pd.to_numeric(df["ward"], errors="coerce").astype("Int64")
     df["community_area"] = pd.to_numeric(df["community_area"], errors="coerce").astype("Int64")
     df["latitude"] = pd.to_numeric(df["latitude"], errors="coerce")
@@ -71,9 +71,7 @@ def transform_chicago_crime(
 
     # Save as Parquet
     os.makedirs(output_dir, exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    basename = os.path.splitext(os.path.basename(file_path))[0]
-    output_path = os.path.join(output_dir, f"transformed_{basename}_{timestamp}.parquet")
+    output_path = os.path.join(output_dir, "transformed_crimes.parquet")
     df.to_parquet(output_path, index=False)
     logger.info("Saved to %s", output_path)
 

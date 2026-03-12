@@ -1,4 +1,5 @@
 import pandas as pd
+import json
 import os
 import duckdb
 from soda_duckdb import DuckDBDataSource
@@ -12,10 +13,9 @@ logger = logging.getLogger(__name__)
 
 AIRFLOW_HOME = "/usr/local/airflow"
 
-def write_report(result, output_dir=os.path.join(AIRFLOW_HOME, "include/reports")):
+def write_report(result, output_dir=os.path.join(AIRFLOW_HOME, "include/reports"), report_name="soda_report.md"):
     os.makedirs(output_dir, exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    report_path = os.path.join(output_dir, f"soda_report_{timestamp}.md")
+    report_path = os.path.join(output_dir, report_name)
 
     md_lines = [
         "# Soda Data Quality Report",
@@ -121,6 +121,7 @@ def write_report(result, output_dir=os.path.join(AIRFLOW_HOME, "include/reports"
 def check_soda(
     file_path: str,
     contract_file_path: str = os.path.join(AIRFLOW_HOME, "include/soda_scan/soda_rules_firstcheck.yml"),
+    report_name: str = "soda_report.md",
 ):
     """
     Vérifie un fichier de données avec Soda selon les règles du contrat YAML.
@@ -135,7 +136,11 @@ def check_soda(
     if file_path.endswith(".parquet"):
         df = pd.read_parquet(file_path)
     else:
-        df = pd.read_json(file_path)
+        with open(file_path, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+        # Ensure every item is a dict (filter out any stray non-dict entries)
+        records = [r for r in raw if isinstance(r, dict)]
+        df = pd.DataFrame(records)
 
     # Connexion DuckDB en mémoire
     conn = duckdb.connect(database=":memory:")
@@ -163,7 +168,7 @@ def check_soda(
     else:
         logger.info(f"Contrat validé : {result.number_of_checks_passed}/{result.number_of_checks} checks passés.")
 
-    write_report(result)
+    write_report(result, report_name=report_name)
     return result
 
 
@@ -182,7 +187,7 @@ def run_check_soda(**context) -> dict:
     file_path = context["ti"].xcom_pull(task_ids="fetch_chicago_crime_data")
     logger.info("XCom file_path from ingestion: %s", file_path)
     contract = os.path.join(AIRFLOW_HOME, "include/soda_scan/soda_rules_firstcheck.yml")
-    result = check_soda(file_path=file_path, contract_file_path=contract)
+    result = check_soda(file_path=file_path, contract_file_path=contract, report_name="soda_report_raw.md")
     return _soda_result_to_dict(result)
 
 
@@ -191,5 +196,5 @@ def run_check_soda_post_transform(**context) -> dict:
     file_path = context["ti"].xcom_pull(task_ids="transform_chicago_crime")
     logger.info("XCom file_path from transform: %s", file_path)
     contract = os.path.join(AIRFLOW_HOME, "include/soda_scan/soda_rules_secondcheck.yml")
-    result = check_soda(file_path=file_path, contract_file_path=contract)
+    result = check_soda(file_path=file_path, contract_file_path=contract, report_name="soda_report_transformed.md")
     return _soda_result_to_dict(result)
