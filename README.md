@@ -184,6 +184,64 @@ Charge les lignes valides dans PostgreSQL via SQLAlchemy.
 - `load_parquet(engine, path, table_name)` — lit le Parquet et insère via `df.to_sql()`.
 - `run_load(**context)` — wrapper Airflow : crée la table si besoin, charge `valid_*.parquet` dans `chicago_crime`, logue le chemin de quarantaine sans le charger.
 
+## Tests
+
+Les tests unitaires sont situés dans `tests/dags/test_dag_example.py`. Ils vérifient la structure et la configuration du DAG **sans déclencher d'exécution réelle** — aucune connexion à la base de données ni appel API n'est effectué.
+
+### Ce qui est testé
+
+| Test | Description |
+|---|---|
+| `test_dag_loaded` | Le DAG est importé sans erreur |
+| `test_dag_has_correct_number_of_tasks` | Le DAG contient exactement 6 tâches |
+| `test_dag_task_ids` | Les identifiants de tâches correspondent aux noms attendus |
+| `test_dag_schedule` | Le DAG est planifié en `@daily` |
+| `test_dag_catchup_disabled` | Le `catchup` est désactivé |
+| `test_dag_owner` | Le propriétaire du DAG est `DonkeyVampires` |
+| `test_dag_retries` | Chaque tâche a 2 retries configurés |
+| `test_dag_dependency_chain` | Les 6 tâches s'enchaînent dans le bon ordre |
+| `test_first_task_has_no_upstream` | `fetch_chicago_crime_data` n'a pas de dépendance amont |
+| `test_last_task_has_no_downstream` | `load_to_postgres` n'a pas de dépendance aval |
+
+### Pourquoi dans le container ?
+
+Les tests utilisent `airflow.models.DagBag` pour charger le DAG. Ce module nécessite un environnement Airflow complet (base de données, configuration, dépendances). Il faut donc exécuter les tests **à l'intérieur du container scheduler**, qui dispose de tout cet environnement.
+
+### Lancer les tests
+
+S'assurer que les containers sont démarrés :
+
+```bash
+astro dev start
+```
+
+Puis exécuter les tests dans le container scheduler :
+
+```bash
+docker exec astro-project_fda9ec-scheduler-1 python -m pytest tests/dags/test_dag_example.py -v
+```
+
+Résultat attendu :
+
+```
+collected 10 items
+
+test_dag_loaded PASSED
+test_dag_has_correct_number_of_tasks PASSED
+test_dag_task_ids PASSED
+test_dag_schedule PASSED
+test_dag_catchup_disabled PASSED
+test_dag_owner PASSED
+test_dag_retries PASSED
+test_dag_dependency_chain PASSED
+test_first_task_has_no_upstream PASSED
+test_last_task_has_no_downstream PASSED
+
+======================== 10 passed in 4.57s ========================
+```
+
+> **Note** : Le nom du container (`astro-project_fda9ec-scheduler-1`) peut varier selon la machine. Le vérifier avec `astro dev ps`.
+
 ## Prérequis
 
 - [Docker](https://docs.docker.com/get-docker/) + [Astro CLI](https://www.astronomer.io/docs/astro/cli/install-cli)
