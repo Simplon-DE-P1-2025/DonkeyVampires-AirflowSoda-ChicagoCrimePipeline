@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1020 140" width="1020" height="140" font-family="'Segoe UI', Arial, sans-serif">
+
+  <defs>
+    <filter id="sh" x="-5%" y="-10%" width="110%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#00000015"/>
+    </filter>
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="4" orient="auto">
+      <polygon points="0 0, 10 4, 0 8" fill="#2196F3"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1020" height="140" fill="#ffffff" rx="14" stroke="#e9ecef" stroke-width="1"/>
+
+  <!-- ── Arrows ── -->
+  <line x1="148" y1="70" x2="168" y2="70" stroke="#2196F3" stroke-width="2.2" marker-end="url(#arr)"/>
+  <line x1="314" y1="70" x2="334" y2="70" stroke="#2196F3" stroke-width="2.2" marker-end="url(#arr)"/>
+  <line x1="480" y1="70" x2="500" y2="70" stroke="#2196F3" stroke-width="2.2" marker-end="url(#arr)"/>
+  <line x1="646" y1="70" x2="666" y2="70" stroke="#2196F3" stroke-width="2.2" marker-end="url(#arr)"/>
+  <line x1="812" y1="70" x2="832" y2="70" stroke="#2196F3" stroke-width="2.2" marker-end="url(#arr)"/>
+
+  <!-- ── Task 1 — fetch ── -->
+  <rect x="10" y="20" width="138" height="100" rx="12" fill="#f4f5f7" stroke="#dee2e6" stroke-width="1.5" filter="url(#sh)"/>
+  <rect x="10" y="20" width="138" height="6" rx="12" fill="#2196F3"/>
+  <rect x="10" y="23" width="138" height="3" fill="#2196F3"/>
+  <text x="79" y="52" text-anchor="middle" font-size="9" font-weight="700" fill="#212529">fetch_chicago</text>
+  <text x="79" y="65" text-anchor="middle" font-size="9" font-weight="700" fill="#212529">_crime_data</text>
+  <text x="79" y="84" text-anchor="middle" font-size="8" fill="#6c757d">→ raw_crimes.json</text>
+
+  <!-- ── Task 2 — check_soda ── -->
+  <rect x="168" y="20" width="146" height="100" rx="12" fill="#f4f5f7" stroke="#dee2e6" stroke-width="1.5" filter="url(#sh)"/>
+  <rect x="168" y="20" width="146" height="6" rx="12" fill="#2196F3"/>
+  <rect x="168" y="23" width="146" height="3" fill="#2196F3"/>
+  <text x="241" y="50" text-anchor="middle" font-size="9" font-weight="700" fill="#2196F3">SODA</text>
+  <text x="241" y="63" text-anchor="middle" font-size="9" font-weight="700" fill="#212529">check_soda</text>
+  <text x="241" y="79" text-anchor="middle" font-size="8" fill="#6c757d">Check 1 · JSON brut</text>
+  <text x="241" y="92" text-anchor="middle" font-size="8" fill="#6c757d">soda_report_raw.md</text>
+
+  <!-- ── Task 3 — transform ── -->
+  <rect x="334" y="20" width="146" height="100" rx="12" fill="#f4f5f7" stroke="#dee2e6" stroke-width="1.5" filter="url(#sh)"/>
+  <rect x="334" y="20" width="146" height="6" rx="12" fill="#6c757d"/>
+  <rect x="334" y="23" width="146" height="3" fill="#6c757d"/>
+  <text x="407" y="52" text-anchor="middle" font-size="9" font-weight="700" fill="#212529">transform_chicago</text>
+  <text x="407" y="65" text-anchor="middle" font-size="9" font-weight="700" fill="#212529">_crime</text>
+  <text x="407" y="84" text-anchor="middle" font-size="8" fill="#6c757d">→ transformed_crimes.parquet</text>
+
+  <!-- ── Task 4 — check_post ── -->
+  <rect x="500" y="20" width="146" height="100" rx="12" fill="#f4f5f7" stroke="#dee2e6" stroke-width="1.5" filter="url(#sh)"/>
+  <rect x="500" y="20" width="146" height="6" rx="12" fill="#2196F3"/>
+  <rect x="500" y="23" width="146" height="3" fill="#2196F3"/>
+  <text x="573" y="50" text-anchor="middle" font-size="9" font-weight="700" fill="#2196F3">SODA</text>
+  <text x="573" y="63" text-anchor="middle" font-size="9" font-weight="700" fill="#212529">check_soda</text>
+  <text x="573" y="76" text-anchor="middle" font-size="9" font-weight="700" fill="#212529">_post_transform</text>
+  <text x="573" y="92" text-anchor="middle" font-size="8" fill="#6c757d">Check 2 · Parquet</text>
+
+  <!-- ── Task 5 — filter ── -->
+  <rect x="666" y="20" width="146" height="100" rx="12" fill="#f4f5f7" stroke="#dee2e6" stroke-width="1.5" filter="url(#sh)"/>
+  <rect x="666" y="20" width="146" height="6" rx="12" fill="#adb5bd"/>
+  <rect x="666" y="23" width="146" height="3" fill="#adb5bd"/>
+  <text x="739" y="52" text-anchor="middle" font-size="9" font-weight="700" fill="#212529">filter_rows</text>
+  <text x="739" y="68" text-anchor="middle" font-size="8" fill="#6c757d">valid / invalid</text>
+  <text x="739" y="84" text-anchor="middle" font-size="8" fill="#6c757d">→ filtered/</text>
+
+  <!-- ── Task 6 — load ── -->
+  <rect x="832" y="20" width="178" height="100" rx="12" fill="#f4f5f7" stroke="#dee2e6" stroke-width="1.5" filter="url(#sh)"/>
+  <rect x="832" y="20" width="178" height="6" rx="12" fill="#495057"/>
+  <rect x="832" y="23" width="178" height="3" fill="#495057"/>
+  <text x="921" y="52" text-anchor="middle" font-size="9" font-weight="700" fill="#212529">load_to_postgres</text>
+  <text x="921" y="68" text-anchor="middle" font-size="8" fill="#6c757d">lignes valides uniquement</text>
+  <text x="921" y="84" text-anchor="middle" font-size="8" fill="#6c757d">→ chicago_crime (PG)</text>
+
+</svg>

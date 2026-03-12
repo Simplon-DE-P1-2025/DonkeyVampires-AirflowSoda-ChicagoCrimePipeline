@@ -6,7 +6,7 @@ requests
 sqlalchemy
 psycopg2-binary
 python-dotenv
-soda-postgres
-soda-duckdb
+soda-postgres==4.1.1
+soda-duckdb==4.1.1
 duckdb
 setuptools

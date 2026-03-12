@@ -1,4 +1,32 @@
+<p align="center">
+  <img src="img/simplon_logo.png" alt="Simplon" height="60"/>
+</p>
+
+<p align="center">
+  <strong>Formation Data Engineer · P1 2025-2027</strong><br/>
+  Groupe · DonkeyVampires<br/>
+  Kaouter &nbsp;|&nbsp; Zoubir &nbsp;|&nbsp; Khalid<br/>
+  <em>11 mars 2026</em>
+</p>
+
+---
+
 # Chicago Crime Pipeline
+
+## Objectif du projet
+
+Ce projet a pour objectif de construire un **pipeline de données de bout en bout** sur les données de criminalité de la ville de Chicago. Il couvre l'ensemble du cycle de vie de la donnée :
+
+1. **Ingestion** — récupération automatique des données depuis l'API publique Chicago Data Portal (format JSON)
+2. **Contrôle qualité initial** — vérification du JSON brut via des contrats Soda (complétude, plages de valeurs, types)
+3. **Transformation** — nettoyage, typage, déduplication et conversion en Parquet
+4. **Contrôle qualité post-transformation** — second passage Soda sur les données typées pour valider la conformité métier
+5. **Filtrage** — séparation ligne par ligne des données valides (→ PostgreSQL) et invalides (→ quarantaine Parquet)
+6. **Chargement** — insertion des lignes conformes dans une base PostgreSQL hébergée sur Render
+
+Le pipeline est orchestré par **Apache Airflow** (Astro CLI) et s'exécute quotidiennement, garantissant une mise à jour régulière des données en base.
+
+---
 
 Pipeline de données automatisé pour ingérer, vérifier, transformer et charger les données de criminalité de Chicago vers PostgreSQL.
 
@@ -7,7 +35,7 @@ Pipeline de données automatisé pour ingérer, vérifier, transformer et charge
 | Outil | Rôle |
 |---|---|
 | Apache Airflow (Astro CLI) | Orchestration du pipeline |
-| Soda Core + DuckDB | Contrôle qualité des données |
+| Soda Core 4.x + DuckDB | Contrôle qualité des données |
 | Pandas + PyArrow | Transformation et Parquet I/O |
 | SQLAlchemy + psycopg2 | Chargement PostgreSQL |
 | Render | Hébergement PostgreSQL |
@@ -15,75 +43,49 @@ Pipeline de données automatisé pour ingérer, vérifier, transformer et charge
 
 ## Architecture du pipeline
 
-```
-fetch_chicago_crime_data
-        │  JSON brut
-        ▼
-   check_soda (check 1)
-        │  contrat qualité sur le JSON
-        ▼
-transform_chicago_crime
-        │  nettoyage → Parquet
-        ▼
-check_soda_post_transform (check 2)
-        │  contrat qualité sur le Parquet
-        ▼
-    filter_rows
-        │  valid_*.parquet  /  invalid_*.parquet (quarantaine)
-        ▼
-  load_to_postgres
-        │  lignes valides uniquement
-        ▼
-  PostgreSQL (table chicago_crime)
-```
+<p align="center">
+  <img src="img/dag_pipeline.svg" alt="DAG chicago_crime_pipeline" width="780"/>
+</p>
 
 ## Structure du projet
 
 ```
-astro_project/
 ├── dags/
-│   └── pipeline_chicago_crime.py   # DAG principal (6 tâches)
+│   └── pipeline_chicago_crime.py       # DAG principal (6 tâches)
 ├── src/
-│   ├── ingestion.py                # Appel API Chicago Data Portal
-│   ├── soda_check.py               # Vérification qualité Soda V4
-│   ├── transformation.py           # Nettoyage et typage des données
-│   ├── filtering.py                # Filtrage valid / invalid
-│   └── load.py                     # Chargement PostgreSQL
+│   ├── ingestion.py                    # Appel API Chicago Data Portal
+│   ├── soda_check.py                   # Vérification qualité Soda V4
+│   ├── transformation.py               # Nettoyage et typage des données
+│   ├── filtering.py                    # Filtrage valid / invalid
+│   └── load.py                         # Chargement PostgreSQL
 ├── include/
 │   ├── soda_scan/
 │   │   ├── soda_rules_firstcheck.yml   # Contrat qualité (données brutes)
 │   │   └── soda_rules_secondcheck.yml  # Contrat qualité (post-transform)
-│   ├── create_tables.sql           # Schéma PostgreSQL
+│   ├── create_tables.sql               # Schéma PostgreSQL
+│   ├── reports/
+│   │   ├── soda_report_raw.md          # Rapport check 1
+│   │   └── soda_report_transformed.md  # Rapport check 2
 │   └── data/
-│       ├── raw/                    # JSON bruts (ingestion)
-│       ├── transformed/            # Parquet nettoyés
-│       └── filtered/               # Parquet valid + quarantaine
+│       ├── raw/                        # raw_crimes.json
+│       ├── transformed/                # transformed_crimes.parquet
+│       └── filtered/                   # valid_crimes.parquet + invalid_crimes.parquet
+├── .env                                # Variables d'environnement (non versionné)
+├── .env.example                        # Template .env
 ├── requirements.txt
 ├── Dockerfile
-├── README.md
-└── airflow_settings.yaml           # Connexion Airflow locale (postgres_chicago_crime)
+└── airflow_settings.yaml               # Connexion Airflow locale
 ```
 
 ## Fonctionnement du DAG
 
-Le DAG `pipeline_chicago_crime` est défini dans `dags/pipeline_chicago_crime.py`. Il s'exécute manuellement (`schedule=None`) et enchaîne 6 tâches :
+Le DAG `pipeline_chicago_crime` s'exécute quotidiennement (`schedule='@daily'`) et enchaîne 6 tâches séquentielles. Chaque tâche transmet le chemin du fichier produit à la suivante via XCom.
 
-| # | Tâche | Fonction appelée | Entrée | Sortie (XCom) |
-|---|---|---|---|---|
-| 1 | `fetch_chicago_crime_data` | `ingestion.fetch_chicago_crime_data` | API Chicago Data Portal | chemin du JSON brut |
-| 2 | `check_soda` | `soda_check.run_check_soda` | JSON brut (XCom tâche 1) | dict résultat Soda |
-| 3 | `transform_chicago_crime` | `transformation.run_transform_chicago_crime` | JSON brut (XCom tâche 1) | chemin du Parquet nettoyé |
-| 4 | `check_soda_post_transform` | `soda_check.run_check_soda_post_transform` | Parquet (XCom tâche 3) | dict résultat Soda |
-| 5 | `filter_rows` | `filtering.run_filter_rows` | Parquet (XCom tâche 3) | `{"valid": "...", "invalid": "..."}` |
-| 6 | `load_to_postgres` | `load.run_load` | dict valid/invalid (XCom tâche 5) | `{"valid_rows_loaded": N, "quarantine_path": "..."}` |
+<p align="center">
+  <img src="img/dag_chain.svg" alt="Chaîne de dépendances DAG" width="900"/>
+</p>
 
-**Chaîne de dépendances :**
-```
-fetch_chicago_crime_data >> check_soda >> transform_chicago_crime
-    >> check_soda_post_transform >> filter_rows >> load_to_postgres
-```
-
-Chaque tâche récupère le chemin du fichier produit par la tâche précédente via `xcom_pull`. Si un check Soda échoue, le contrat qualité est rompu mais le pipeline continue (comportement configurable).
+Si un check Soda échoue, le contrat qualité est rompu mais le pipeline continue (comportement configurable).
 
 
 ## Contrôles qualité (Soda)
@@ -147,14 +149,14 @@ Après le second check, `filtering.py` applique les mêmes règles de manière *
 ## Scripts source (`src/`)
 
 ### `ingestion.py`
-Interroge l'API publique [Chicago Data Portal](https://data.cityofchicago.org) (endpoint Socrata), récupère les données de criminalité en JSON, et les sauvegarde dans `include/data/raw/raw_crimes_<timestamp>.json`.
+Interroge l'API publique [Chicago Data Portal](https://data.cityofchicago.org) (endpoint Socrata), récupère les données de criminalité en JSON, et les sauvegarde dans `include/data/raw/raw_crimes.json` (écrase le fichier à chaque run).
 
 ### `soda_check.py`
 Encapsule les vérifications qualité **Soda V4** via DuckDB (moteur in-memory).
 
 - `check_soda(file_path, contract_file_path)` — charge le fichier (JSON ou Parquet détecté automatiquement) dans une table DuckDB `chicago_crime`, exécute le contrat YAML, écrit un rapport dans `include/reports/`, retourne le résultat.
-- `run_check_soda(**context)` — wrapper Airflow pour le **check 1** (données brutes, `soda_rules_firstcheck.yml`).
-- `run_check_soda_post_transform(**context)` — wrapper Airflow pour le **check 2** (post-transformation, `soda_rules_secondcheck.yml`).
+- `run_check_soda(**context)` — wrapper Airflow pour le **check 1**, génère `include/reports/soda_report_raw.md`.
+- `run_check_soda_post_transform(**context)` — wrapper Airflow pour le **check 2**, génère `include/reports/soda_report_transformed.md`.
 
 ### `transformation.py`
 Charge le JSON brut, applique le pipeline de nettoyage suivant, et sauvegarde le résultat en Parquet dans `include/data/transformed/` :
@@ -169,8 +171,8 @@ Charge le JSON brut, applique le pipeline de nettoyage suivant, et sauvegarde le
 ### `filtering.py`
 Applique des règles de validation ligne par ligne sur le Parquet transformé et produit deux fichiers :
 
-- `include/data/filtered/valid_<timestamp>.parquet` — lignes conformes, prêtes pour PostgreSQL
-- `include/data/filtered/invalid_<timestamp>.parquet` — lignes rejetées (quarantaine)
+- `include/data/filtered/valid_crimes.parquet` — lignes conformes, prêtes pour PostgreSQL
+- `include/data/filtered/invalid_crimes.parquet` — lignes rejetées (quarantaine)
 
 Règles appliquées : `id` non nul, `date` et `year` entre 2001 et 2026, `primary_type` dans la liste officielle Chicago PD, `district` entre 1 et 25, coordonnées dans les bornes géographiques de Chicago.
 
@@ -192,7 +194,7 @@ Charge les lignes valides dans PostgreSQL via SQLAlchemy.
 ```bash
 # 1. Cloner le repo
 git clone https://github.com/Simplon-DE-P1-2025/DonkeyVampires-AirflowSoda-ChicagoCrimePipeline.git
-cd DonkeyVampires-AirflowSoda-ChicagoCrimePipeline/astro_project
+cd DonkeyVampires-AirflowSoda-ChicagoCrimePipeline
 
 # 2. Créer le fichier .env
 cp .env.example .env   # puis renseigner les credentials PostgreSQL
@@ -214,12 +216,17 @@ POSTGRES_PORT=PORT
 POSTGRES_DB=DB_NAME
 POSTGRES_USER=USER_NAME
 POSTGRES_PASSWORD=PASSWORD
+
+# UID Linux de l'hôte (évite les problèmes de permissions sur include/)
+AIRFLOW_UID=1000
 ```
 
 > ⚠️ Utiliser le **hostname externe** Render (visible dans Dashboard → PostgreSQL → External Database URL). Le hostname interne n'est pas résolvable depuis Docker.
+
+> Vérifier son UID Linux avec `id -u` et mettre à jour `AIRFLOW_UID` en conséquence.
 
 
 
 ## Connexion Airflow
 
-La connexion `postgres_chicago_crime` est déclarée dans `airflow_settings.yaml` et chargée automatiquement au démarrage local.
+La connexion `postgres_chicago_crime` est déclarée dans `airflow_settings.yaml` et en `.env` chargée automatiquement au démarrage local.
